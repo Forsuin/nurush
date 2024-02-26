@@ -1,0 +1,15 @@
+This project creates and writes to a fileystem. This filesytem
+exists inside of a binary file ontop of an actual filesytem.
+The program will either create or open the file inputted, then
+prompt the user to enter a command to create files, directories, or to quit writing to the filesystem.
+
+
+How to build
+
+- 'make' to build executable
+- 'make clean' to remove executable and any "filesystem" files
+
+How to run
+- rufs [filesystem]
+
+filesytem - name of filesytem file to be written to
