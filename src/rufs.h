@@ -2,8 +2,10 @@
 #include <stack>
 #include <vector>
 #include <list>
+#include <memory>
 
 #include "variant.h"
+#include "optional.hpp"
 
 struct Program
 {
@@ -21,30 +23,33 @@ struct Directory;
 
 struct Directory
 {
-    std::vector<Filable> contents;
+    char name[11] = {0};
+
+    std::vector<Filable> files;
+    std::vector<std::unique_ptr<Directory>> sub_dirs;
 
     Directory *parent;
-
-    Directory() : parent(nullptr) {}
-    Directory(Directory &parent) : parent(&parent) {}
 };
 
 struct Filable
 {
-    char name[11];
+    char name[11] = {0};
 
-    variant<Program, Text, Directory> contents;
+    variant<Program, Text> contents;
 };
 
 struct Filesystem
 {
-    Directory root;
+    Directory root;     // Filesystem owns root
+    Directory *cur_dir; // non-owning reference
     std::string name;
 
-    void write_file(Filable &file);
+    void create_file(Filable &file);
     void create_dir(const std::string &dir_name);
-    void end_dir();
-    void close_dirs();
+    void dotdot();
+    const tl::optional<Filable &> find(const std::string &filename) const;
+    bool contains(const std::string &filename) const;
+
     void print();
 
     Filesystem() {}
