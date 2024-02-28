@@ -1,17 +1,22 @@
+#define FMT_HEADER_ONLY
+
 #include <iostream>
 #include <fstream>
+
+#include <fmt/core.h>
 
 #include "rufs.h"
 
 int main(int argc, char **argv)
 {
+
     if (argc != 2)
     {
         std::cout << "Usage: rufs [filename]" << std::endl;
         return 1;
     }
 
-    Filesystem fs(std::string(argv[1]) + ".dat");
+    Filesystem fs(std::string(argv[1]) + ".bin");
 
     // Create filesystem if it doesn't already exist,
     // otherwise we'll overwrite the filesystem
@@ -94,11 +99,11 @@ int main(int argc, char **argv)
             Filable file;
             if (input.back() == 't')
             {
-                file.contents.set<TextFile>();
+                file.contents.set<Text>();
             }
             else
             {
-                file.contents.set<ProgramFile>();
+                file.contents.set<Program>();
             }
 
             // Set filename to default state
@@ -119,7 +124,7 @@ int main(int argc, char **argv)
 
             // Set extension
             file.name[8] = '.';
-            if (file.contents.is<TextFile>())
+            if (file.contents.is<Text>())
             {
 
                 file.name[9] = 't';
@@ -131,7 +136,7 @@ int main(int argc, char **argv)
             file.name[10] = '\0';
 
             // Getting file contents
-            if (file.contents.is<TextFile>())
+            if (file.contents.is<Text>())
             {
 
                 std::cout << "Enter contents: ";
@@ -139,7 +144,7 @@ int main(int argc, char **argv)
                 std::cin.ignore();
                 getline(std::cin, input);
 
-                file.contents.set<TextFile>(TextFile{input, (int)input.length()});
+                file.contents.set<Text>(Text{input});
             }
             else
             {
@@ -152,21 +157,24 @@ int main(int argc, char **argv)
                 std::cout << "Enter memory requirements: ";
                 std::cin >> mem_req;
 
-                file.contents.set<ProgramFile>(ProgramFile{cpu_req, mem_req});
+                file.contents.set<Program>(Program{cpu_req, mem_req});
             }
 
-            fs.write_file(file);
+            fs.create_file(file);
         }
         else if (input == "EndDir")
         {
-            fs.end_dir();
+            fs.close_dir();
         }
         else if (input == "quit")
         {
-            // Make sure to close any open directories
-            fs.close_dirs();
 
-            fs.print();
+            while (fs.cur_dir->name != "root")
+            {
+                fs.close_dir();
+            }
+
+            // fs.print();
 
             close = true;
         }

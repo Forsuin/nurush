@@ -7,6 +7,9 @@ CFLAGS := -g -Wall -Wextra $(STD)
 SRC_DIR := src
 BUILD_DIR := build
 
+FMT_INC := ./fmt/include
+CFLAGS += -I $(FMT_INC)
+
 BIN := rufs
 
 # get all .cpp files from src dir
@@ -29,4 +32,4 @@ $(BUILD_DIR):
 	mkdir -p $@
 
 clean:
-	rm -rf $(BUILD_DIR) $(BIN) *.dat
+	rm -rf $(BUILD_DIR) $(BIN) *.bin
