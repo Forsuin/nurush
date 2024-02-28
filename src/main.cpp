@@ -96,20 +96,17 @@ int main(int argc, char **argv)
 
             // Good filename now, guaranteed to be text or program
 
-            Filable file;
+            std::shared_ptr<Filable> file;
+
             if (input.back() == 't')
             {
-                file.contents.set<Text>();
+                file = std::make_shared<Text>();
+                file->name[9] = 't';
             }
             else
             {
-                file.contents.set<Program>();
-            }
-
-            // Set filename to default state
-            for (int i = 0; i < 8; i++)
-            {
-                file.name[i] = '\0';
+                file = std::make_shared<Program>();
+                file->name[9] = 'p';
             }
 
             // Getting filename
@@ -119,46 +116,15 @@ int main(int argc, char **argv)
                 {
                     break;
                 }
-                file.name[i] = input[i];
+                file->name[i] = input[i];
             }
-
             // Set extension
-            file.name[8] = '.';
-            if (file.contents.is<Text>())
-            {
+            file->name[8] = '.';
 
-                file.name[9] = 't';
-            }
-            else
-            {
-                file.name[9] = 'p';
-            }
-            file.name[10] = '\0';
+            file->name[10] = '\0';
 
-            // Getting file contents
-            if (file.contents.is<Text>())
-            {
-
-                std::cout << "Enter contents: ";
-                // consume newline
-                std::cin.ignore();
-                getline(std::cin, input);
-
-                file.contents.set<Text>(Text{input});
-            }
-            else
-            {
-                int mem_req;
-                int cpu_req;
-
-                std::cout << "Enter CPU requirements: ";
-                std::cin >> cpu_req;
-
-                std::cout << "Enter memory requirements: ";
-                std::cin >> mem_req;
-
-                file.contents.set<Program>(Program{cpu_req, mem_req});
-            }
+            // Get input for file
+            file->get_input();
 
             fs.create_file(file);
         }
@@ -169,10 +135,12 @@ int main(int argc, char **argv)
         else if (input == "quit")
         {
 
-            while (fs.cur_dir->name != "root")
+            while (fs.cur_dir->parent != nullptr)
             {
                 fs.close_dir();
             }
+
+            fs.write();
 
             // fs.print();
 
