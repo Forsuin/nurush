@@ -35,7 +35,7 @@ struct Filable
 {
     char name[11] = {0};
 
-    variant<Program, Text, Directory> contents;
+    variant<Program, Text> contents;
 };
 
 struct Filesystem

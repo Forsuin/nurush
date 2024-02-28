@@ -1,10 +1,12 @@
 #include <fstream>
 #include <memory>
 #include <algorithm>
+#include <memory>
+#include <algorithm>
 
 #include "rufs.h"
 
-void Filesystem::create_file(Filable &file)
+void Filesystem::create_file(Filable &file) void Filesystem::create_file(Filable &file)
 {
     cur_dir->contents.get<Directory>().files.push_back(std::make_shared<Filable>(file));
 }
