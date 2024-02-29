@@ -11,6 +11,9 @@
 
 #include <fmt/core.h>
 
+/*
+    Interface defining what a Filable element of the fs is
+*/
 struct Filable
 {
     char name[11] = {0};
@@ -21,6 +24,9 @@ struct Filable
     virtual ~Filable() = default;
 };
 
+/*
+    A program file. Handles getting it's own input and writing itself to disk
+*/
 struct Program : virtual public Filable
 {
     int cpu;
@@ -50,6 +56,9 @@ struct Program : virtual public Filable
     }
 };
 
+/*
+    A text file. Handles getting it's own input and writing itself to disk
+*/
 struct Text : virtual public Filable
 {
     std::string data;
@@ -76,6 +85,10 @@ struct Text : virtual public Filable
     }
 };
 
+/*
+    A directory "file". Holds an array of its contents. Also holds a reference to its parent for moving up the fs
+    Handles writing itself to disk
+*/
 struct Directory : virtual public Filable
 {
     std::vector<std::shared_ptr<Filable>> files;
@@ -101,6 +114,10 @@ private:
     void get_input() {}
 };
 
+/*
+    Defines the filesystme as a whole, the root node is created when a new FS is constructed.
+    Also is responsible for keeping track of the current directory
+*/
 struct Filesystem
 {
     Directory root;               // Filesystem owns root

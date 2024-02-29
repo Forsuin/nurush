@@ -34,6 +34,7 @@ void Filesystem::create_dir(const std::string &dir_name)
     std::shared_ptr<Filable> ptr = std::make_shared<Directory>(new_dir);
     create_file(ptr);
 
+    // I can pretty safely cast like this and assume it's a directory since I just added it
     cur_dir = dynamic_cast<Directory *>(cur_dir->files[cur_dir->files.size() - 1].get());
 }
 
