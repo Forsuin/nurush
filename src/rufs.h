@@ -106,8 +106,9 @@ struct Directory : virtual public Filable
             f->write(ofile);
         }
 
-        std::string end = "End" + std::string(name);
+        std::string end = "End";
         ofile.write(end.c_str(), end.length());
+        ofile.write(name, 11);
     }
 
 private:
@@ -132,7 +133,7 @@ struct Filesystem
     void write();
     void close_dir();
 
-    void print();
+    std::string get_info();
 
     Filesystem() : name("rufs.dat")
     {

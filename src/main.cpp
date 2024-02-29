@@ -16,15 +16,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    // root directory created automatically
     Filesystem fs(std::string(argv[1]) + ".bin");
 
     // Create filesystem if it doesn't already exist,
     // otherwise we'll overwrite the filesystem
     std::ofstream(fs.name, std::ios::trunc).close();
-
-    // Create root directory as first entry
-    std::string root = "root";
-    fs.create_dir(root);
 
     std::cout << "Welcome to RUFS. Enter one of the following commands: " << std::endl;
     std::cout << "CreateDir, CreateFile, EndDir, or quit" << std::endl;
@@ -142,7 +139,7 @@ int main(int argc, char **argv)
 
             fs.write();
 
-            // fs.print();
+            fmt::println(fs.get_info());
 
             close = true;
         }

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <memory>
 #include <algorithm>
+#include <iterator>
 
 #include "rufs.h"
 
@@ -76,4 +77,19 @@ void Filesystem::close_dir()
     {
         cur_dir = cur_dir->parent;
     }
+}
+
+std::string Filesystem::get_info()
+{
+    std::ifstream ifile(name, std::ios::binary);
+
+    std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(ifile), {});
+
+    std::string output;
+
+    for (auto it = buffer.begin(); it != buffer.end();)
+    {
+        }
+
+    return output;
 }
