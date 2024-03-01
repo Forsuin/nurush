@@ -8,12 +8,18 @@
 
 #include "rufs.h"
 
+/*
+    Add a file to current working directory
+*/
 void Filesystem::create_file(std::shared_ptr<Filable> &file)
 {
     // copies file into vector so safe to pass reference
     cur_dir->files.push_back(file);
 }
 
+/*
+    Create a directory in filesytem and add it to current working directory
+*/
 void Filesystem::create_dir(const std::string &dir_name)
 {
     Directory new_dir;
@@ -38,6 +44,9 @@ void Filesystem::create_dir(const std::string &dir_name)
     create_file(ptr);
 }
 
+/*
+    Move working directory up to parent if parent exists, otherwise stay at root
+*/
 void Filesystem::dotdot()
 {
     if (cur_dir->parent != nullptr)
@@ -78,6 +87,9 @@ void Filesystem::close_dir()
     }
 }
 
+/*
+    Read in a directory form a given ifstream and add it to filesystem
+*/
 void Filesystem::read_dir(std::ifstream &ifile)
 {
     char name[11];
@@ -114,6 +126,9 @@ void Filesystem::read_dir(std::ifstream &ifile)
     ifile.seekg(14, std::ios::cur);
 }
 
+/*
+    Read in a text file from a given ifstream and add to filesystem
+*/
 void Filesystem::read_text(std::ifstream &ifile)
 {
     char name[11];
@@ -133,6 +148,9 @@ void Filesystem::read_text(std::ifstream &ifile)
     create_file(file);
 }
 
+/*
+    Read in a program file from a given ifstream and add to filesystem
+*/
 void Filesystem::read_prog(std::ifstream &ifile)
 {
     char name[11];
@@ -152,6 +170,9 @@ void Filesystem::read_prog(std::ifstream &ifile)
     create_file(file);
 }
 
+/*
+    Constructor
+*/
 Filesystem::Filesystem(std::string name) : name(name)
 {
     if (std::ifstream(name).good())
@@ -166,6 +187,9 @@ Filesystem::Filesystem(std::string name) : name(name)
     create_dir("root");
 }
 
+/*
+    Print the abosulute path to the current working directory
+*/
 std::string Filesystem::pwd()
 {
     std::string output = "";
@@ -189,6 +213,9 @@ std::string Filesystem::pwd()
     return output;
 }
 
+/*
+    List what directory your in and all the contents of that directory
+*/
 std::string Filesystem::ls()
 {
     std::string output;
@@ -239,6 +266,9 @@ bool Filesystem::change_dir(std::string new_dir)
     }
 }
 
+/*
+    Prints the contents of a text file
+*/
 std::string Filesystem::cat(std::string file)
 {
     if (!contains(file))

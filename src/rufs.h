@@ -18,7 +18,14 @@ struct Filable
 {
     char name[11] = {0};
 
+    /*
+        Writes out the contents of a 'file' to a given ofstream
+    */
     virtual void write(std::ofstream &ofile) = 0;
+
+    /*
+        Handles reading in input for a specific file type
+    */
     virtual void get_input() = 0;
 
     virtual ~Filable() = default;
