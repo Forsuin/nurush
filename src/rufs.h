@@ -76,7 +76,7 @@ struct Text : virtual public Filable
     {
         std::string input;
 
-        std::cout << "Enter contents: ";
+        std::cout << "Enter file contents: ";
         // consume newline
         std::cin.ignore();
         getline(std::cin, input);

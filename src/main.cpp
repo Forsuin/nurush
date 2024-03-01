@@ -2,10 +2,16 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include <fmt/core.h>
 
 #include "rufs.h"
+
+bool expected_args(std::vector<std::string> &tokens, int expected)
+{
+    return tokens.size() == expected;
+}
 
 int main(int argc, char **argv)
 {
@@ -24,122 +30,156 @@ int main(int argc, char **argv)
 
     bool close = false;
 
+    /*
+        pwd - print absolute path of working directory
+        ls - list names of all files and directories in working directory, including the type
+             Also list name of directory
+        cd <dirname> - change to specified directory
+        cd .. - move to parent directory, ignore if root
+        mkdir <name> - make a new directory with specified name
+        cat <filename> - print contents of a text file or ignore invalid file type
+        createFile <filename> - create a file with name and prompt user for contents
+        printInfo - print out filesystem info from project 1
+        quit - stop rush and return to linux shell
+    */
+
     // Main REPL loop
     std::string input;
     while (!close)
     {
         std::cout << "Command> ";
-        std::cin >> input;
+        std::getline(std::cin, input, '\n');
 
-        if (input == "CreateDir")
+        std::stringstream ss(input);
+        std::string word;
+        std::vector<std::string> tokens;
+
+        while (ss >> word)
         {
-            std::cout << "Enter directory name: ";
-            std::cin >> input;
-
-            bool bad_dirname = false;
-
-            do
-            {
-                // reset each loop
-                bad_dirname = false;
-
-                if (input.length() > 8)
-                {
-                    std::cout << "Invalid directory, can only be 8 characters long" << std::endl;
-                    bad_dirname = true;
-
-                    std::cout << "Enter directory name: ";
-                    std::cin >> input;
-                }
-            } while (bad_dirname);
-
-            fs.create_dir(input);
+            tokens.push_back(word);
         }
-        else if (input == "CreateFile")
+
+        if (tokens.size() > 2)
         {
-            bool bad_filename = false;
+            fmt::println("Invalid command: Too many arguments");
+            continue;
+        }
 
-            // Verify file name
-            do
+#define EX_ARGS(correct_token_count, expected__arg_count)                                                              \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!expected_args(tokens, correct_token_count))                                                               \
+        {                                                                                                              \
+            fmt::println("Invalid number of arguments. Expected {}, recieved {}", expected__arg_count, tokens.size()); \
+            continue;                                                                                                  \
+        }                                                                                                              \
+    } while (0)
+
+        if (tokens[0] == "pwd")
+        {
+            EX_ARGS(1, 0);
+            fs.pwd();
+        }
+        else if (tokens[0] == "ls")
+        {
+            EX_ARGS(1, 0);
+            fs.ls();
+        }
+        else if (tokens[0] == "cd")
+        {
+            EX_ARGS(2, 1);
+
+            if (tokens[1] == "..")
             {
-                // reset each loop
-                bad_filename = false;
-                input.clear();
-
-                std::cout << "Enter filename: ";
-                std::cin >> input;
-
-                // 10 because null character at end
-                if (input.length() > 10)
+                fs.dotdot();
+            }
+            else
+            {
+                if (!fs.contains(tokens[1]))
                 {
-                    std::cout << "Invalid filename, must be 10 characters long or less" << std::endl;
-                    bad_filename = true;
+                    fmt::println("Directory {} does not exist", tokens[1]);
+                    continue;
                 }
-                else if (input[input.length() - 2] != '.')
-                {
-                    std::cout << "Missing file extension" << std::endl;
-                    bad_filename = true;
-                }
-                else if (input.back() != 't' && input.back() != 'p')
-                {
-                    std::cout << "Invalid file extension" << std::endl;
-                    bad_filename = true;
-                }
-            } while (bad_filename);
 
-            // Good filename now, guaranteed to be text or program
+                fs.change_dir(tokens[1]);
+            }
+        }
+        else if (tokens[0] == "mkdir")
+        {
+            EX_ARGS(2, 1);
+
+            if (tokens[1].length() > 8)
+            {
+                fmt::println("Invalid directory name, can only be 8 characters name long");
+                continue;
+            }
+
+            fs.create_dir(tokens[1]);
+        }
+        else if (tokens[0] == "cat")
+        {
+            EX_ARGS(2, 1);
+            fs.cat();
+        }
+        else if (tokens[0] == "createFile")
+        {
+            EX_ARGS(2, 1);
+
+            if (tokens[1].length() > 10)
+            {
+                fmt::println("Invalid file name, can be a maximum of 10 charactesr long");
+                continue;
+            }
+            else if (tokens[1][tokens[1].length() - 2] != '.')
+            {
+                fmt::println("Missing file extension");
+                continue;
+            }
+            else if (tokens[1].back() != 't' && tokens[1].back() != 'p')
+            {
+                fmt::println("Invalid file extension. Must be .p or .t");
+                continue;
+            }
 
             std::shared_ptr<Filable> file;
 
             if (input.back() == 't')
             {
-                file = std::make_shared<Text>();
+                Text t;
+                t.get_input();
+
+                file = std::make_shared<Text>(t);
                 file->name[9] = 't';
             }
             else
             {
-                file = std::make_shared<Program>();
+                Program p;
+                p.get_input();
+
+                file = std::make_shared<Program>(p);
                 file->name[9] = 'p';
             }
 
-            // Getting filename
-            for (int i = 0;; i++)
+            // Get filename
+            for (int i = 0; i < 8; i++)
             {
-                if (input[i] == '.')
-                {
-                    break;
-                }
-                file->name[i] = input[i];
+                file->name[i] = tokens[1][i];
             }
-            // Set extension
             file->name[8] = '.';
-
             file->name[10] = '\0';
-
-            // Get input for file
-            file->get_input();
 
             fs.create_file(file);
         }
-        else if (input == "EndDir")
+        else if (tokens[0] == "printInfo")
         {
-            fs.close_dir();
+            EX_ARGS(1, 0);
+            fs.print_info();
         }
-        else if (input == "quit")
+        else if (tokens[0] == "quit")
         {
-
-            while (fs.cur_dir->parent != nullptr)
-            {
-                fs.close_dir();
-            }
-
-            fs.write();
-
+            EX_ARGS(1, 0);
             close = true;
-        }
-        else
-        {
-            std::cout << "Invalid command" << std::endl;
+            continue;
         }
     }
 }
