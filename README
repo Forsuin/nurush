@@ -1,8 +1,10 @@
-This project creates and writes to a fileystem. This filesytem
-exists inside of a binary file ontop of an actual filesytem.
-The program will either create or open the file inputted, then
-prompt the user to enter a command to create files, directories, or to quit writing to the filesystem.
+This project will start a shell that you can run various commands in. When starting the shell
+you pass in the name of a file to use as the 'filesystem', the extension .bin is automatically appended to it.
+When redirecting input to the shell, it reads it correctly, but sometimes lines don't line up properly and 
+I am so tired of working on this I'm just going to leave it as is. The same happened project 1
 
+If any invalid commands/arguments are entered, an error message is displayed and your in-progress
+command is discarded
 
 How to build
 

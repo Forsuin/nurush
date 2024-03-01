@@ -25,9 +25,6 @@ int main(int argc, char **argv)
     // root directory created automatically
     Filesystem fs(std::string(argv[1]) + ".bin");
 
-    std::cout << "Welcome to RUFS. Enter one of the following commands: " << std::endl;
-    std::cout << "CreateDir, CreateFile, EndDir, or quit" << std::endl;
-
     bool close = false;
 
     /*

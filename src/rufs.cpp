@@ -288,9 +288,166 @@ std::string Filesystem::cat(std::string file)
     }
 }
 
+void read_text_info(std::ifstream &ifile, std::string &output)
+{
+
+    char name[11];
+    ifile.read(name, 11);
+
+    output += fmt::format("{}: Filename: {}.t\nType: Text file\n", (int)ifile.tellg(), std::string(name));
+
+    int size;
+    ifile.read((char *)&size, sizeof(int));
+
+    output += fmt::format("{}: Size of text file: {} byte{}\n", (int)ifile.tellg(), size, (size > 1) ? "s" : "");
+
+    char contents[size];
+    ifile.read(contents, size);
+
+    output += fmt::format("{}: Contents of text file: {}\n", (int)ifile.tellg(), std::string(contents));
+}
+
+void read_prog_info(std::ifstream &ifile, std::string &output)
+{
+    char name[11];
+    ifile.read(name, 11);
+
+    output += fmt::format("{}: Filename: {}.p\nType: Program\n", (int)ifile.tellg(), std::string(name));
+
+    int cpu;
+    int mem;
+    ifile.read((char *)&cpu, sizeof(int));
+    ifile.read((char *)&mem, sizeof(int));
+
+    output += fmt::format("Contents: CPU Requirement: {}, Memory Requirement: {}\n", cpu, mem);
+}
+
+void read_dir_info(std::ifstream &ifile, std::string &output)
+{
+    output += fmt::format("{}: Directory: ", (int)ifile.tellg());
+
+    char name[11];
+    ifile.read(name, 11);
+
+    output += fmt::format("{}.d\n", std::string(name));
+
+    int size;
+    ifile.read((char *)&size, sizeof(int));
+
+    output += fmt::format("{}: Directory {} contains {} {}\n", (int)ifile.tellg(), std::string(name), size, ((size == 1) ? "file/directory" : "files/directories"));
+
+    for (int i = 0; i < size; i++)
+    {
+        ifile.read(name, 11);
+        ifile.seekg(-11, std::ios_base::cur);
+
+        switch (name[9])
+        {
+        case 'p':
+            read_prog_info(ifile, output);
+            break;
+        case 't':
+            read_text_info(ifile, output);
+            break;
+        default:
+            break;
+        }
+    }
+
+    // skip over End directory portion as it's not needed
+    ifile.seekg(14, std::ios::cur);
+
+    output += fmt::format("{}: End of directory {}.d\n", (int)ifile.tellg(), std::string(name));
+}
+
 std::string Filesystem::get_info()
 {
+    // Write current state of fileystem to disk
+    write();
+
+    std::ifstream ifile(name, std::ios::binary);
+    std::string output;
+
+    read_prog_info(ifile, output);
+
+    return output;
 }
+
+/*
+    void Filesystem::read_dir(std::ifstream &ifile)
+{
+    char name[11];
+    ifile.read(name, 11);
+
+    int size;
+    ifile.read((char *)&size, sizeof(int));
+
+    // string constructor will stop at first null
+    if (std::string(name) == "root")
+    {
+        create_dir("root");
+    }
+
+    for (int i = 0; i < size; i++)
+    {
+        ifile.read(name, 11);
+        ifile.seekg(-11, std::ios_base::cur);
+
+        switch (name[9])
+        {
+        case 'p':
+            read_prog(ifile);
+            break;
+        case 't':
+            read_text(ifile);
+            break;
+        default:
+            break;
+        }
+    }
+
+    // skip over End directory portion as it's not needed
+    ifile.seekg(14, std::ios::cur);
+}
+
+void Filesystem::read_text(std::ifstream &ifile)
+{
+    char name[11];
+    ifile.read(name, 11);
+
+    int size;
+    ifile.read((char *)&size, sizeof(int));
+
+    char contents[size];
+    ifile.read(contents, size);
+
+    Text t;
+    t.data = contents;
+
+    std::shared_ptr<Filable> file = std::make_shared<Text>(t);
+
+    create_file(file);
+}
+
+void Filesystem::read_prog(std::ifstream &ifile)
+{
+    char name[11];
+    ifile.read(name, 11);
+
+    int cpu;
+    int mem;
+    ifile.read((char *)&cpu, sizeof(int));
+    ifile.read((char *)&mem, sizeof(int));
+
+    Program p;
+    p.cpu = cpu;
+    p.mem = mem;
+
+    std::shared_ptr<Filable> file = std::make_shared<Program>(p);
+
+    create_file(file);
+}
+*/
 
 // std::string Filesystem::get_info()
 // {
