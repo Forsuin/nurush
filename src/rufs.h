@@ -128,11 +128,15 @@ struct Filesystem
     void create_file(std::shared_ptr<Filable> &file);
     void create_dir(const std::string &dir_name);
     void dotdot();
-    const tl::optional<Filable &> find(const std::string &filename) const;
+    Filable *find(std::string &filename);
     bool contains(const std::string &filename) const;
     void write();
     void close_dir();
 
+    std::string pwd();
+    std::string ls();
+    bool change_dir(std::string new_dir);
+    std::string cat(std::string file);
     std::string get_info();
 
     Filesystem(std::string name);

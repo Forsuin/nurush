@@ -36,23 +36,20 @@ void Filesystem::create_dir(const std::string &dir_name)
     new_dir.parent = cur_dir;
     std::shared_ptr<Filable> ptr = std::make_shared<Directory>(new_dir);
     create_file(ptr);
-
-    // I can pretty safely cast like this and assume it's a directory since I just added it
-    cur_dir = dynamic_cast<Directory *>(cur_dir->files[cur_dir->files.size() - 1].get());
 }
 
 void Filesystem::dotdot()
 {
-    cur_dir = cur_dir->parent;
+    if (cur_dir->parent != nullptr)
+        cur_dir = cur_dir->parent;
 }
 
 // returns file if it exists in current directory
-const tl::optional<Filable &> Filesystem::find(const std::string &filename) const
+Filable *Filesystem::find(std::string &filename)
 {
     auto i = std::find_if(cur_dir->files.begin(), cur_dir->files.end(), [filename](std::shared_ptr<Filable> &f)
                           { return std::string(f.get()->name) == filename; });
-
-    return (i != cur_dir->files.end()) ? tl::make_optional<Filable &>(*((*i).get())) : tl::nullopt;
+    return (i != cur_dir->files.end()) ? (*i).get() : nullptr;
 }
 
 // Checks if file exists in current directory
@@ -157,7 +154,7 @@ void Filesystem::read_prog(std::ifstream &ifile)
 
 Filesystem::Filesystem(std::string name) : name(name)
 {
-    if (!std::ifstream(name).good())
+    if (std::ifstream(name).good())
     {
         std::ifstream ifile(name, std::ios::binary);
 
@@ -167,6 +164,102 @@ Filesystem::Filesystem(std::string name) : name(name)
     }
 
     create_dir("root");
+}
+
+std::string Filesystem::pwd()
+{
+    std::string output = "";
+
+    Directory *current_dir = cur_dir;
+
+    while (current_dir != nullptr)
+    {
+        if (output == "")
+        {
+            output = fmt::format("{}", current_dir->name);
+        }
+        else
+        {
+            output = fmt::format("{}/{}", current_dir->name, output);
+        }
+
+        current_dir = current_dir->parent;
+    }
+
+    return output;
+}
+
+std::string Filesystem::ls()
+{
+    std::string output;
+
+    output += fmt::format("Directory Name: {}\n", cur_dir->name);
+
+    for (auto &f : cur_dir->files)
+    {
+        if (Text *t = dynamic_cast<Text *>(f.get()))
+        {
+            output += fmt::format("Filename: {} Type: Text file\n", t->name);
+        }
+        else if (Program *p = dynamic_cast<Program *>(f.get()))
+        {
+            output += fmt::format("Filename: {} Type: Program file\n", p->name);
+        }
+        else
+        {
+            Directory *d = dynamic_cast<Directory *>(f.get());
+
+            output += fmt::format("Filename: {} Type: Directory\n", d->name);
+        }
+    }
+
+    return output;
+}
+
+/*
+    Change working directory to new_dir and return if change was possible
+*/
+bool Filesystem::change_dir(std::string new_dir)
+{
+    if (!contains(new_dir))
+    {
+        return false;
+    }
+
+    Filable *sub_dir = find(new_dir);
+
+    if (Directory *d = dynamic_cast<Directory *>(sub_dir))
+    {
+        cur_dir = d;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+std::string Filesystem::cat(std::string file)
+{
+    if (!contains(file))
+    {
+        return "File does not exist";
+    }
+
+    Filable *f = find(file);
+
+    if (Text *t = dynamic_cast<Text *>(f))
+    {
+        return fmt::format("Text file contents:\n{}", t->data);
+    }
+    else
+    {
+        return "Invalid file type";
+    }
+}
+
+std::string Filesystem::get_info()
+{
 }
 
 // std::string Filesystem::get_info()

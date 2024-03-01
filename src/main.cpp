@@ -65,25 +65,25 @@ int main(int argc, char **argv)
             continue;
         }
 
-#define EX_ARGS(correct_token_count, expected__arg_count)                                                              \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if (!expected_args(tokens, correct_token_count))                                                               \
-        {                                                                                                              \
-            fmt::println("Invalid number of arguments. Expected {}, recieved {}", expected__arg_count, tokens.size()); \
-            continue;                                                                                                  \
-        }                                                                                                              \
+#define EX_ARGS(correct_token_count, expected__arg_count)                                                                  \
+    do                                                                                                                     \
+    {                                                                                                                      \
+        if (!expected_args(tokens, correct_token_count))                                                                   \
+        {                                                                                                                  \
+            fmt::println("Invalid number of arguments. Expected {}, recieved {}", expected__arg_count, tokens.size() - 1); \
+            continue;                                                                                                      \
+        }                                                                                                                  \
     } while (0)
 
         if (tokens[0] == "pwd")
         {
             EX_ARGS(1, 0);
-            fs.pwd();
+            fmt::println(fs.pwd());
         }
         else if (tokens[0] == "ls")
         {
             EX_ARGS(1, 0);
-            fs.ls();
+            fmt::println(fs.ls());
         }
         else if (tokens[0] == "cd")
         {
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
         else if (tokens[0] == "cat")
         {
             EX_ARGS(2, 1);
-            fs.cat();
+            fmt::println(fs.cat(tokens[1]));
         }
         else if (tokens[0] == "createFile")
         {
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
         else if (tokens[0] == "printInfo")
         {
             EX_ARGS(1, 0);
-            fs.print_info();
+            fmt::println(fs.get_info());
         }
         else if (tokens[0] == "quit")
         {
